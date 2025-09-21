@@ -1,23 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:intl/intl.dart';
 
 class SecondPage extends StatelessWidget {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
 
-  Future<Map<String, dynamic>?> getSchema(String day) async {
+  Future<String?> getSchema(DateTime dateTime) async {
+    final day = DateFormat('EEEE').format(dateTime);
     final snapshot = await _database.child('Alice').child(day).get();
+
     if (snapshot.exists) {
-      return Map<String, dynamic>.from(snapshot.value as Map);
+      final value = snapshot.value;
+      if (value is String) {
+        return value;
+      } else if (value is Map) {
+        // Если вдруг это Map, преобразуем в строку
+        return value.toString();
+      }
     }
     return null;
   }
 
   @override
   Widget build(BuildContext context) {
+    final currentDate = DateTime.now(); // Исправлено: теперь это объект DateTime
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Schema'),
+        title: Text('Schema för ${DateFormat('EEEE').format(currentDate)}'), // Показываем день недели в заголовке
         backgroundColor: Colors.blue,
       ),
       body: Center(
@@ -36,14 +46,13 @@ class SecondPage extends StatelessWidget {
                 // Здесь можно обновить состояние если используем StatefulWidget
                 // или использовать другую логику
               },
-              child: Text('Hämta schema för Tisdag'),
+              child: Text('Hämta schema för ${DateFormat('EEEE').format(currentDate)}'),
             ),
 
             SizedBox(height: 30),
 
-
-            FutureBuilder<Map<String, dynamic>?>(
-              future: getSchema('Tisdag'),
+            FutureBuilder<String?>(
+              future: getSchema(currentDate),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return CircularProgressIndicator();
@@ -54,7 +63,7 @@ class SecondPage extends StatelessWidget {
                   // Отображаем данные в удобном формате
                   return Column(
                     children: [
-                      Text('Schema för Tisdag:',
+                      Text('Schema för ${DateFormat('EEEE').format(currentDate)}:',
                           style: TextStyle(fontWeight: FontWeight.bold)),
                       SizedBox(height: 10),
                       // Пример отображения данных
@@ -65,7 +74,7 @@ class SecondPage extends StatelessWidget {
                     ],
                   );
                 } else {
-                  return Text('Inget schema hittades');
+                  return Text('Inget schema hittades för ${DateFormat('EEEE').format(currentDate)}');
                 }
               },
             ),

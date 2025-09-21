@@ -8,25 +8,6 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:157010188500:android:f873776744bdff27c20341",
-        "android_client_info": {
-          "package_name": "com.example.schema_app"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDdZmyFnWhJIVqPW5ZD14C3PPDSv7Q52lE"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
         "mobilesdk_app_id": "1:157010188500:android:1ec0faded8a15dd7c20341",
         "android_client_info": {
           "package_name": "com.example.weather_app"
