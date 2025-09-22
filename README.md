@@ -1,6 +1,7 @@
-#School App är en cross-platform applikation utvecklad i Flutter med syftet att kombinera väderdata med
+School App är en cross-platform applikation utvecklad i Flutter med syftet att kombinera väderdata med
 schemahantering från Firebase.
-###Applikationen funktiolitet och arkitektur :
+
+Applikationen funktiolitet och arkitektur :
 • Inkludera 3 olika UI Interaktiv Widgets , t.ex ElevatedButton , TextFormField, IconButton
 • Firebase Realtime Database för schemalagring
 • REST API-integration för väderdata
