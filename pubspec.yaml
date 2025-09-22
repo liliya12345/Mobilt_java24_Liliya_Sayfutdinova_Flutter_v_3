@@ -15,13 +15,15 @@ dependencies:
   dio: ^5.9.0
   env_flutter: ^0.1.4
   http: ^1.5.0
-  geolocator: ^14.0.2
-  geocoding: ^4.0.0
+  geolocator: ^10.0.0 # Обновляем до последней версии
+  geocoding: ^2.1.0
   lottie: ^3.3.2
   intl: ^0.20.2
   firebase_database:
   firebase_core:
   firebase_remote_config:
+  location: ^8.0.1
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:weather_app/theme.dart';
 import 'package:weather_app/utils/getWeatherData.dart';
 import '../models/weather.dart';
@@ -18,7 +19,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: theme,
       title: 'Weather App',
-      home: const WeatherApp(), // Теперь WeatherApp является home, а не вложенным MaterialApp
+      home: const WeatherApp(),
     );
   }
 }
@@ -33,24 +34,42 @@ class WeatherApp extends StatefulWidget {
 class _WeatherAppState extends State<WeatherApp> {
   Weather? weather;
   final TextEditingController _searchController = TextEditingController();
-  String _currentCity = 'Lund';
+  String _currentCity = 'Stockholm';
   String animal = '';
   bool isSchool = true;
+  bool _isLoading = true;
 
-  void getData() async {
+  Future<void> getData() async {
     try {
-      String city = await getCurrentCity();
-      final data = await getWeatherData(city);
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? savedCity = prefs.getString('city');
+
+      // Если нет сохраненного города, получаем из IP
+      if (savedCity == null || savedCity.isEmpty) {
+        savedCity = await getCityFromIP();
+      }
+
+      final data = await getWeatherData(savedCity);
       setState(() {
         weather = data;
-        _currentCity = city;
+        _currentCity = savedCity!;
+        _isLoading = false;
       });
     } catch (e) {
       print('Error: $e');
-      final data = await getWeatherData(_currentCity);
-      setState(() {
-        weather = data;
-      });
+      // Пробуем загрузить погоду для города по умолчанию
+      try {
+        final data = await getWeatherData(_currentCity);
+        setState(() {
+          weather = data;
+          _isLoading = false;
+        });
+      } catch (e) {
+        print('Second error: $e');
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -58,17 +77,30 @@ class _WeatherAppState extends State<WeatherApp> {
     final city = _searchController.text.trim();
     if (city.isNotEmpty) {
       setState(() {
-        weather = null;
+        _isLoading = true;
       });
 
       try {
         final data = await getWeatherData(city);
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        // await prefs.setString('city', city);
+
         setState(() {
           weather = data;
           _currentCity = city;
+          _isLoading = false;
         });
       } catch (e) {
         print('Error searching city: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not find city: $city'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        setState(() {
+          _isLoading = false;
+        });
       }
 
       _searchController.clear();
@@ -79,11 +111,9 @@ class _WeatherAppState extends State<WeatherApp> {
     final day = DateFormat('EEEE').format(dateTime);
     switch(day) {
       case 'Saturday':
-        isSchool = false;
-        return const Color(0xFFEDA547);
       case 'Sunday':
         isSchool = false;
-        return const Color(0xFFF19724);
+        return const Color(0xFFEDA547);
       default:
         isSchool = true;
         return const Color(0xFFFFFFFE);
@@ -98,8 +128,8 @@ class _WeatherAppState extends State<WeatherApp> {
 
     switch (mainCondition.toLowerCase()) {
       case 'clouds':
-        animal = 'yay';
-        animation = 'assets/snow.json';
+        animal = 'cat';
+        animation = 'assets/cloudy.json';
         break;
       case 'thunderstorm':
         animal = 'yay';
@@ -144,7 +174,7 @@ class _WeatherAppState extends State<WeatherApp> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold( // Убрали MaterialApp, теперь используем Scaffold
+    return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black.withOpacity(0.3),
         elevation: 0,
@@ -177,7 +207,7 @@ class _WeatherAppState extends State<WeatherApp> {
             ],
           ),
         ),
-        child: weather == null
+        child: _isLoading
             ? const Center(
           child: CircularProgressIndicator(
             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
@@ -189,7 +219,6 @@ class _WeatherAppState extends State<WeatherApp> {
             Center(
               child: Column(
                 children: [
-                  // Дата и анимация погоды на одной строке
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     decoration: BoxDecoration(
@@ -199,7 +228,6 @@ class _WeatherAppState extends State<WeatherApp> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Дата и время
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,10 +261,7 @@ class _WeatherAppState extends State<WeatherApp> {
                             ],
                           ),
                         ),
-
                         const SizedBox(width: 20),
-
-                        // Погодная анимация
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
@@ -252,22 +277,16 @@ class _WeatherAppState extends State<WeatherApp> {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 40),
-
-                  // Температура (отдельный блок)
                   Text(
                     '${weather?.temperature ?? '--'}°C',
                     style: const TextStyle(
-                      fontSize: 64,
+                      fontSize: 40,
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
-                  // Город и погода (отдельный блок)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
                     decoration: BoxDecoration(
@@ -279,7 +298,7 @@ class _WeatherAppState extends State<WeatherApp> {
                         Text(
                           weather?.name ?? _currentCity,
                           style: const TextStyle(
-                            fontSize: 28,
+                            fontSize: 20,
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                           ),
@@ -288,7 +307,7 @@ class _WeatherAppState extends State<WeatherApp> {
                         Text(
                           weather?.main ?? "",
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 16,
                             color: Colors.white.withOpacity(0.95),
                             fontStyle: FontStyle.italic,
                           ),
@@ -304,10 +323,7 @@ class _WeatherAppState extends State<WeatherApp> {
                       ],
                     ),
                   ),
-
-                  const SizedBox(height: 40),
-
-                  // Анимация животного
+                  const SizedBox(height: 30),
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -316,14 +332,11 @@ class _WeatherAppState extends State<WeatherApp> {
                     ),
                     child: Lottie.asset(
                       'assets/${animal}.json',
-                      width: 280,
-                      height: 280,
+                      width: 200,
+                      height: 200,
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
-                  // Кнопка перехода на вторую страницу
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: ElevatedButton(
@@ -344,7 +357,6 @@ class _WeatherAppState extends State<WeatherApp> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 50),
                 ],
               ),
