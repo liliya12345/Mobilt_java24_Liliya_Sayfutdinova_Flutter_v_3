@@ -1,16 +1,15 @@
-# weather_app
-
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+#School App är en cross-platform applikation utvecklad i Flutter med syftet att kombinera väderdata med
+schemahantering från Firebase.
+###Applikationen funktiolitet och arkitektur :
+• Inkludera 3 olika UI Interaktiv Widgets , t.ex ElevatedButton , TextFormField, IconButton
+• Firebase Realtime Database för schemalagring
+• REST API-integration för väderdata
+• SharedPreferences för lokal lagring av användarinställningar
+• IP thjänst för platslokation
+• navigering mellan 2 sidor med Navigator
+• ha en custom appicon , inklusive favicon för webben.
+• Loffie animation
+• Fungera på både Android & webbläsare (t.ex: chrome/firefox/safari)
+Nyckelfunktioner:
+• Dynamisk hämtning av väder, sök efter väder
+• Dynamisk hämtning av school schema
